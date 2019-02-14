@@ -72,7 +72,7 @@ export default class ReconnectingWebSocket {
     private _connectTimeout: any;
     private _shouldReconnect = true;
     private _connectLock = false;
-    private _binaryType = 'blob';
+    private _binaryType: BinaryType = 'blob';
     private _closeCalled = false;
     private _messageQueue: Message[] = [];
 
@@ -113,11 +113,11 @@ export default class ReconnectingWebSocket {
         return ReconnectingWebSocket.CLOSED;
     }
 
-    get binaryType(): string {
+    get binaryType(): BinaryType {
         return this._ws ? this._ws.binaryType : this._binaryType;
     }
 
-    set binaryType(value: string) {
+    set binaryType(value: BinaryType) {
         this._binaryType = value;
         if (this._ws) {
             // @ts-ignore
