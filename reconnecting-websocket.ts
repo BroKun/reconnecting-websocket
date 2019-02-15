@@ -7,7 +7,7 @@
 import {
     CloseEvent,
     ErrorEvent,
-    Event,
+    Event as BaseEvent,
     WebSocketEventListenerMap,
     WebSocketEventMap,
 } from './events';
@@ -24,7 +24,7 @@ const getGlobalWebSocket = (): WebSocket | undefined => {
  */
 const isWebSocket = (w: any) => typeof w === 'function' && w.CLOSING === 2;
 
-export type Event = Event;
+export type BaseEvent = BaseEvent;
 export type ErrorEvent = ErrorEvent;
 export type CloseEvent = CloseEvent;
 
@@ -186,23 +186,23 @@ export default class ReconnectingWebSocket {
     /**
      * An event listener to be called when the WebSocket connection's readyState changes to CLOSED
      */
-    public onclose?: (event: CloseEvent) => void = undefined;
+    public onclose: ((event: CloseEvent) => void) | null = null;
 
     /**
      * An event listener to be called when an error occurs
      */
-    public onerror?: (event: Event) => void = undefined;
+    public onerror: ((event: BaseEvent) => void) | null = null;
 
     /**
      * An event listener to be called when a message is received from the server
      */
-    public onmessage?: (event: MessageEvent) => void = undefined;
+    public onmessage: ((event: MessageEvent) => void) | null = null;
 
     /**
      * An event listener to be called when the WebSocket connection's readyState changes to OPEN;
      * this indicates that the connection is ready to send and receive data
      */
-    public onopen?: (event: Event) => void = undefined;
+    public onopen: ((event: BaseEvent) => void) | null = null;
 
     /**
      * Closes the WebSocket connection or connection attempt, if any. If the connection is already
@@ -250,6 +250,13 @@ export default class ReconnectingWebSocket {
             this._debug('enqueue', data);
             this._messageQueue.push(data);
         }
+    }
+
+    public dispatchEvent(event: Event) {
+        if (this._ws && this._ws.dispatchEvent) {
+            return this._ws.dispatchEvent(event);
+        }
+        return false;
     }
 
     /**
@@ -408,7 +415,7 @@ export default class ReconnectingWebSocket {
         }
     }
 
-    private _handleOpen = (event: Event) => {
+    private _handleOpen = (event: BaseEvent) => {
         this._debug('open event');
         const {minUptime = DEFAULT.minUptime} = this._options;
 
